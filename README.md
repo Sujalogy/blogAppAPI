@@ -1,2 +1,0 @@
-# blogAppAPI
-Blog Application API

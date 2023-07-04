@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voting System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 5px 10px;
+    }
+
+    .voted {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div id="voting">
+    <h1>Candidate List</h1>
+    <ul id="candidate-list">
+      <% candidates.forEach(function(candidate) { %>
+        <li>
+          <span><%= candidate.name %>:</span>
+          <span><%= candidate.votes %></span>
+          <button data-candidate="<%= candidate.name %>" <%= candidate.voted ? 'disabled' : '' %>>Vote</button>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+
+  <script>
+    const candidateList = document.getElementById('candidate-list');
+    const socket = new WebSocket('ws://localhost:3000');
+
+    socket.onmessage = function (event) {
+      const candidateData = JSON.parse(event.data);
+
+      // Clear the candidate list
+      candidateList.innerHTML = '';
+
+      // Add each candidate to the list
+      candidateData.forEach(function (candidate) {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span>${candidate.name}:</span>
+          <span>${candidate.votes}</span>
+          <button data-candidate="${candidate.name}" ${candidate.voted ? 'disabled' : ''}>Vote</button>
+        `;
+        li.querySelector('button').addEventListener('click', function () {
+          const candidateName = this.getAttribute('data-candidate');
+          socket.send(candidateName);
+        });
+        candidateList.appendChild(li);
+      });
+    };
+  </script>
+</body>
+</html>
